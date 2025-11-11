@@ -21,7 +21,7 @@ export default function LoginPage() {
 
     try {
       // TODO: ganti dengan endpoint login aslimu
-      const res = await fetch("https://api.example.com/auth/login", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
