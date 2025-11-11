@@ -1,4 +1,4 @@
-// app/login/page.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -20,7 +20,6 @@ export default function LoginPage() {
     setError("");
 
     try {
-      // TODO: ganti dengan endpoint login aslimu
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -41,12 +40,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-white">
-      {/* KIRI: Logo + Form */}
       <div className="w-full md:w-1/2 flex items-center justify-center px-6 lg:px-16">
         <div className="w-full max-w-md">
-          {/* App Logo box (sesuai wireframe) */}
-          
-            {/* kalau sudah punya file logo, ganti div ini dengan <Image /> */}
            <Image src={jm} alt="logo" style={{width:'300px', margin: '0 auto'}}/>
           
 
@@ -90,18 +85,14 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* KANAN: App Illustration / Background */}
       <div className="hidden md:block md:w-1/2 bg-slate-100 relative">
-        {/* Pakai gambar sendiri di /public, misal /login-illustration.png */}
         <Image
-          src={jm2} // ganti dengan file ilustrasimu
+          src={jm2}
           alt="App Illustration / Background"
           fill
           className="object-cover"
         />
-        {/* overlay tipis supaya teks (kalau ada) masih kebaca */}
         <div className="absolute inset-0 bg-slate-900/5" />
-        {/* Optional: teks tengah kalau belum punya gambar */}
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-slate-500 text-xl font-semibold">
             App Illustration / Background

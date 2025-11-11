@@ -1,4 +1,4 @@
-// app/master/gates/page.tsx
+
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -17,7 +17,7 @@ interface GateRow {
   gerbang: string;
 }
 
-// dummy data – nanti ganti ke data dari API
+// dummy data 
 const MOCK_GATES: GateRow[] = [
   { id: 1, ruas: "Ruas 1", gerbang: "Gerbang 1" },
   { id: 2, ruas: "Ruas 1", gerbang: "Gerbang 2" },
@@ -48,7 +48,6 @@ export default function MasterGatesPage() {
       return;
     }
     const data = await res.json();
-    // sesuaikan dengan struktur backend, contoh: { data: [...] }
     // setRows(data.data ?? data);
     console.log(data)
   };
@@ -56,7 +55,6 @@ export default function MasterGatesPage() {
   loadGates();
 }, []);
 
-  // filter + pagination lokal
   const filtered = useMemo(
     () =>
       MOCK_GATES.filter(
@@ -97,9 +95,6 @@ export default function MasterGatesPage() {
   };
 
   const handleDelete = (row: GateRow) => {
-    // TODO: panggil API delete
-    // contoh:
-    // await fetch(`/api/gates/${row.id}`, { method: "DELETE" });
     console.log("DELETE", row);
   };
 
@@ -107,10 +102,8 @@ export default function MasterGatesPage() {
     if (!current) return;
 
     if (modalMode === "create") {
-      // TODO: panggil API create
       console.log("CREATE", current);
     } else if (modalMode === "edit") {
-      // TODO: panggil API update
       console.log("UPDATE", current);
     }
     setModalOpen(false);
@@ -121,8 +114,7 @@ export default function MasterGatesPage() {
       <h1 className="text-lg font-semibold mb-4 text-slate-800">
         Master Data gerbang
       </h1>
-
-      {/* BAR ATAS: Search + Tambah */}
+      
       <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
         <div className="w-full sm:w-72">
           <TextInput

@@ -1,4 +1,4 @@
-// components/AppShell.tsx
+
 "use client";
 
 import { ReactNode, useState } from "react";
@@ -19,7 +19,7 @@ interface AppShellProps {
 export default function LayoutShell({ children }: AppShellProps) {
   const pathname = usePathname();
 
-  // buka default kalau lagi di /reports/*
+
   const [laporanOpened, setLaporanOpened] = useState(
     pathname.startsWith("/reports")
   );
@@ -72,8 +72,6 @@ export default function LayoutShell({ children }: AppShellProps) {
               active={pathname === "/reports/daily"}
               className="rounded-md"
             />
-            {/* kalau nanti ada sub-menu lain (misal Laporan Bulanan),
-                tinggal tambahkan NavLink lagi di sini */}
           </NavLink>
 
           {/* Master Gerbang */}
@@ -96,13 +94,10 @@ export default function LayoutShell({ children }: AppShellProps) {
 
       {/* MAIN AREA */}
       <div className="flex-1 flex flex-col">
-        {/* Header/top bar */}
         <header className="h-16 bg-slate-300 flex items-center justify-end px-6 gap-4">
-          {/* icon user */}
           <div className="w-9 h-9 rounded-full border border-slate-600 flex items-center justify-center">
             <span className="text-slate-700 text-sm">👤</span>
           </div>
-          {/* icon settings/filter */}
           <div className="w-9 h-9 rounded-full border border-slate-600 flex items-center justify-center">
             <span className="text-slate-700 text-sm">⚙️</span>
           </div>

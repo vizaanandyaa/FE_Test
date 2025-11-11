@@ -1,4 +1,4 @@
-// app/dashboard/page.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -18,11 +18,11 @@ interface GateStat {
   count: number;
 }
 interface ShiftStat {
-  label: string; // "Shift 1" dll
+  label: string; 
   percent: number;
 }
 interface BranchStat {
-  label: string; // "Ruas 1" dll
+  label: string; 
   percent: number;
 }
 
@@ -35,7 +35,7 @@ export default function DashboardPage() {
   const [shiftStats, setShiftStats] = useState<ShiftStat[]>([]);
   const [branchStats, setBranchStats] = useState<BranchStat[]>([]);
 
-  // contoh dummy data; nanti ganti dari API
+  // dummy data
   const loadDummy = () => {
     setMethodStats([
       { method: "BCA", count: 35 },
@@ -66,7 +66,6 @@ export default function DashboardPage() {
   };
 
   const fetchDashboard = async () => {
-    // ganti nanti dengan API beneran
     const dateStr = date ? dayjs(date).format("YYYY-MM-DD") : "";
     console.log("fetch dashboard for", dateStr, "search:", search);
     loadDummy();
@@ -116,10 +115,8 @@ export default function DashboardPage() {
 
   return (
     <LayoutShell>
-      {/* Title */}
       <h1 className="text-lg font-semibold mb-4 text-slate-800">Dashboard</h1>
 
-      {/* Filter bar */}
       <div className="flex flex-wrap gap-3 items-end mb-6">
         <DateInput
           label="Tanggal"
@@ -144,34 +141,26 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      {/* MAIN GRID: 2 kolom kiri (bar), 1 kolom kanan (doughnut) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Kiri: 2 bar chart (ambil 2 kolom) */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Bar 1 */}
           <div className="border border-slate-200 rounded-lg p-4">
             <h2 className="text-sm font-medium text-slate-700 mb-3">
               Jumlah Lalin per Metode Pembayaran
             </h2>
             <div className="h-64">
-              {/* <Bar data={barMethodData} /> */}
             </div>
           </div>
 
-          {/* Bar 2 */}
           <div className="border border-slate-200 rounded-lg p-4">
             <h2 className="text-sm font-medium text-slate-700 mb-3">
               Jumlah Lalin per Gerbang
             </h2>
             <div className="h-64">
-              {/* <Bar data={barGateData} /> */}
             </div>
           </div>
         </div>
 
-        {/* Kanan: 2 donut chart stack */}
         <div className="space-y-6">
-          {/* Donut Shift */}
           <div className="border border-slate-200 rounded-lg p-4 flex">
             <div className="w-40 h-40">
               {/* <Doughnut data={doughnutShiftData} /> */}
@@ -191,7 +180,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Donut Ruas */}
           <div className="border border-slate-200 rounded-lg p-4 flex">
             <div className="w-40 h-40">
               {/* <Doughnut data={doughnutBranchData} /> */}

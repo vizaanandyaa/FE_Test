@@ -1,8 +1,7 @@
-// app/api/auth/login/route.ts
+
 export async function POST(req: Request) {
   const body = await req.json();
 
-  // teruskan ke backend asli di :8080
   const apiRes = await fetch("http://localhost:8080/api/auth/login", {
     method: "POST",
     headers: {
@@ -11,7 +10,7 @@ export async function POST(req: Request) {
     body: JSON.stringify(body),
   });
 
-  const data = await apiRes.text(); // bisa json atau text
+  const data = await apiRes.text(); 
   return new Response(data, {
     status: apiRes.status,
     headers: {

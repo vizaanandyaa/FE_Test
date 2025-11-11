@@ -1,4 +1,4 @@
-// app/reports/daily/page.tsx
+
 "use client";
 
 import { useMemo, useState } from "react";
@@ -14,7 +14,7 @@ interface DailyRow {
   gerbang: string;
   gardu: string;
   hari: string;
-  tanggal: string; // "YYYY-MM-DD"
+  tanggal: string; 
   metodePembayaran: "Tunai" | "E-Toll" | "Flo" | "KTP";
   golI: number;
   golII: number;
@@ -24,7 +24,7 @@ interface DailyRow {
   totalLalin: number;
 }
 
-// dummy data – ganti dengan API
+// dummy data
 const MOCK_ROWS: DailyRow[] = [
   {
     no: 1,
@@ -128,7 +128,6 @@ export default function DailyReportPage() {
   const [activeTab, setActiveTab] = useState<string>("tunai");
 
   const handleFilter = () => {
-    // nanti kalau pakai API, panggil API di sini
     setPage(1);
   };
 
@@ -143,7 +142,6 @@ export default function DailyReportPage() {
     console.log("EXPORT search:", search, "date:", dateStr);
   };
 
-  // 1) filter dasar: search + tanggal
   const baseRows = useMemo(() => {
     return MOCK_ROWS.filter((row) => {
       const matchSearch =
@@ -159,7 +157,6 @@ export default function DailyReportPage() {
     });
   }, [search, date]);
 
-  // 2) filter lagi berdasarkan Tab yang dipilih
   const rowsByTab = useMemo(() => {
     switch (activeTab) {
       case "tunai":
@@ -180,7 +177,6 @@ export default function DailyReportPage() {
     }
   }, [baseRows, activeTab]);
 
-  // 3) pagination pakai rowsByTab
   const pageSizeNum = parseInt(pageSize, 10);
   const totalPages = Math.max(
     1,
@@ -192,7 +188,6 @@ export default function DailyReportPage() {
   );
 
 
-  // 4) summary (per ruas & total keseluruhan) juga dari rowsByTab
   const totalsByRuas = useMemo(() => {
     const map = new Map<string, number>();
     rowsByTab.forEach((r) => {
@@ -206,7 +201,6 @@ export default function DailyReportPage() {
     [rowsByTab]
   );
 
-  // 5) total per jenis untuk tampilan di masing-masing Tab (dari baseRows)
   const totalTunai = baseRows
     .filter((r) => r.metodePembayaran === "Tunai")
     .reduce((s, r) => s + r.totalLalin, 0);
@@ -297,7 +291,6 @@ export default function DailyReportPage() {
         Laporan Lalin Per Hari
       </h1>
 
-      {/* FILTER BOX */}
       <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-4">
         <div className="flex flex-wrap gap-4 items-end">
           <div className="w-full sm:w-64">
@@ -335,9 +328,7 @@ export default function DailyReportPage() {
         </div>
       </div>
 
-      {/* TABLE + EXPORT */}
       <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
-        {/* Header export */}
         <div className="flex items-center justify-end px-4 py-2 border-b border-slate-200 bg-slate-50">
           <Button
             variant="outline"
@@ -349,14 +340,13 @@ export default function DailyReportPage() {
           </Button>
         </div>
 
-        {/* TABS TOTAL */}
         <div className="px-4 pt-4 pb-2 border-b border-slate-200 bg-slate-50">
           <Tabs
             value={activeTab}
             onChange={(value) => {
               if (!value) return;
               setActiveTab(value);
-              setPage(1); // reset ke page 1 setiap ganti tab
+              setPage(1); 
             }}
             radius="md"
             variant="outline"
@@ -429,7 +419,6 @@ export default function DailyReportPage() {
           </Tabs>
         </div>
 
-        {/* TABEL DETAIL (isi mengikuti Tab) */}
         <div className="overflow-x-auto">
           <Table.ScrollContainer minWidth={800}>
             <Table verticalSpacing="xs">
@@ -449,7 +438,6 @@ export default function DailyReportPage() {
           </Table.ScrollContainer>
         </div>
 
-        {/* PAGINATION */}
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-slate-200 text-xs md:text-sm bg-white">
           <div className="flex items-center gap-2">
             <span>Show :</span>

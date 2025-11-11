@@ -1,4 +1,4 @@
-// components/ClientProviders.tsx
+
 "use client";
 
 import { MantineProvider } from "@mantine/core";

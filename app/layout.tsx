@@ -1,5 +1,4 @@
-// app/layout.tsx
-// app/layout.tsx
+
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import "./globals.css";
