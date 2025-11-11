@@ -2,7 +2,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { TextInput, Button, Select } from "@mantine/core";
+import { TextInput, Button, Select, Tabs, Table, Text } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import dayjs from "dayjs";
 import LayoutShell from "@/components/LayoutShell";
@@ -24,7 +24,7 @@ interface DailyRow {
   totalLalin: number;
 }
 
-// dummy data contoh; nanti ganti dari API
+// dummy data – ganti dengan API
 const MOCK_ROWS: DailyRow[] = [
   {
     no: 1,
@@ -118,14 +118,17 @@ const MOCK_ROWS: DailyRow[] = [
   },
 ];
 
+const tableHeader = ['No', 'Ruas', 'Gerbang', 'Gardu', 'Hari', 'Tanggal', 'Metode Pembayaran', 'Gol 1', 'Gol II', 'Gol III', 'Gol IV','Gol V', 'Total Lalin']
+
 export default function DailyReportPage() {
   const [search, setSearch] = useState("");
   const [date, setDate] = useState<Date | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState("5");
+  const [activeTab, setActiveTab] = useState<string>("tunai");
 
   const handleFilter = () => {
-    // kalau nanti pakai API, panggil API di sini dengan query search + date
+    // nanti kalau pakai API, panggil API di sini
     setPage(1);
   };
 
@@ -136,14 +139,12 @@ export default function DailyReportPage() {
   };
 
   const handleExport = () => {
-    // ganti dengan endpoint export (misal download Excel)
     const dateStr = date ? dayjs(date).format("YYYY-MM-DD") : "";
-    console.log("EXPORT dengan search:", search, "date:", dateStr);
-    // window.open(`/api/export?search=${search}&date=${dateStr}`, "_blank");
+    console.log("EXPORT search:", search, "date:", dateStr);
   };
 
-  // filter lokal (dummy)
-  const filteredRows = useMemo(() => {
+  // 1) filter dasar: search + tanggal
+  const baseRows = useMemo(() => {
     return MOCK_ROWS.filter((row) => {
       const matchSearch =
         !search ||
@@ -158,46 +159,137 @@ export default function DailyReportPage() {
     });
   }, [search, date]);
 
-  // pagination lokal
+  // 2) filter lagi berdasarkan Tab yang dipilih
+  const rowsByTab = useMemo(() => {
+    switch (activeTab) {
+      case "tunai":
+        return baseRows.filter((r) => r.metodePembayaran === "Tunai");
+      case "etoll":
+        return baseRows.filter((r) => r.metodePembayaran === "E-Toll");
+      case "flo":
+        return baseRows.filter((r) => r.metodePembayaran === "Flo");
+      case "ktp":
+        return baseRows.filter((r) => r.metodePembayaran === "KTP");
+      case "combo":
+        return baseRows.filter((r) =>
+          ["Tunai", "E-Toll", "Flo"].includes(r.metodePembayaran)
+        );
+      case "keseluruhan":
+      default:
+        return baseRows;
+    }
+  }, [baseRows, activeTab]);
+
+  // 3) pagination pakai rowsByTab
   const pageSizeNum = parseInt(pageSize, 10);
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredRows.length / pageSizeNum || 1)
+    Math.ceil(rowsByTab.length / pageSizeNum || 1)
   );
-
-  const pagedRows = filteredRows.slice(
+  const pagedRows = rowsByTab.slice(
     (page - 1) * pageSizeNum,
     page * pageSizeNum
   );
 
-  // summary per ruas dan total keseluruhan
+
+  // 4) summary (per ruas & total keseluruhan) juga dari rowsByTab
   const totalsByRuas = useMemo(() => {
     const map = new Map<string, number>();
-    filteredRows.forEach((r) => {
+    rowsByTab.forEach((r) => {
       map.set(r.ruas, (map.get(r.ruas) || 0) + r.totalLalin);
     });
-    return Array.from(map.entries()); // [ [ruas, total], ... ]
-  }, [filteredRows]);
+    return Array.from(map.entries());
+  }, [rowsByTab]);
 
   const totalKeseluruhan = useMemo(
-    () => filteredRows.reduce((sum, r) => sum + r.totalLalin, 0),
-    [filteredRows]
+    () => rowsByTab.reduce((sum, r) => sum + r.totalLalin, 0),
+    [rowsByTab]
   );
 
-  // contoh total per metode pembayaran buat header abu-abu
-  const totalTunai = filteredRows
+  // 5) total per jenis untuk tampilan di masing-masing Tab (dari baseRows)
+  const totalTunai = baseRows
     .filter((r) => r.metodePembayaran === "Tunai")
     .reduce((s, r) => s + r.totalLalin, 0);
-  const totalEtoll = filteredRows
+  const totalEtoll = baseRows
     .filter((r) => r.metodePembayaran === "E-Toll")
     .reduce((s, r) => s + r.totalLalin, 0);
-  const totalFlo = filteredRows
+  const totalFlo = baseRows
     .filter((r) => r.metodePembayaran === "Flo")
     .reduce((s, r) => s + r.totalLalin, 0);
-  const totalKtp = filteredRows
+  const totalKtp = baseRows
     .filter((r) => r.metodePembayaran === "KTP")
     .reduce((s, r) => s + r.totalLalin, 0);
   const totalEtollTunaiFlo = totalTunai + totalEtoll + totalFlo;
+
+  const rows = pagedRows.map((row) => (
+          <Table.Tr key={row.no}>
+            <Table.Td>
+              <Text>
+                {row.no}
+              </Text>
+            </Table.Td>
+            <Table.Td key={row.ruas}>
+              <Text>
+                {row.ruas}
+              </Text>
+            </Table.Td>
+            <Table.Td key={row.gerbang}>
+              <Text>
+                {row.gerbang}
+              </Text>
+            </Table.Td>
+            <Table.Td key={row.gardu}>
+              <Text>
+                {row.gardu}
+              </Text>
+            </Table.Td>
+            <Table.Td key={row.hari}>
+              <Text>
+                {row.hari}
+              </Text>
+            </Table.Td>
+            <Table.Td key={row.tanggal}>
+              <Text>
+                {dayjs(row.tanggal).format("DD-MM-YYYY")}
+              </Text>
+            </Table.Td>
+            <Table.Td key={row.metodePembayaran}>
+              <Text>
+                {row.metodePembayaran}
+              </Text>
+            </Table.Td>
+            <Table.Td key={row.golI}>
+              <Text>
+                {row.golI}
+              </Text>
+            </Table.Td>
+            <Table.Td key={row.golII}>
+              <Text>
+                {row.golII}
+              </Text>
+            </Table.Td>
+            <Table.Td key={row.golIII}>
+              <Text>
+                {row.golIII}
+              </Text>
+            </Table.Td>
+            <Table.Td key={row.golIV}>
+              <Text>
+                {row.golIV}
+              </Text>
+            </Table.Td>
+            <Table.Td key={row.golV}>
+              <Text>
+                {row.golV}
+              </Text>
+            </Table.Td>
+            <Table.Td key={row.totalLalin}>
+              <Text>
+                {row.totalLalin}
+              </Text>
+            </Table.Td>
+          </Table.Tr>
+        ));
 
   return (
     <LayoutShell>
@@ -212,14 +304,17 @@ export default function DailyReportPage() {
             <TextInput
               placeholder="Search"
               value={search}
-              onChange={(e) => setSearch(e.currentTarget.value)}
+              onChange={(e) => {
+                setSearch(e.currentTarget.value);
+                setPage(1);
+              }}
               radius="md"
             />
           </div>
           <div className="w-full sm:w-56">
             <DateInput
               value={date}
-            //   onChange={setDate}
+              // onChange={setDate}
               valueFormat="DD-MM-YYYY"
               placeholder="Tanggal"
               radius="md"
@@ -242,7 +337,7 @@ export default function DailyReportPage() {
 
       {/* TABLE + EXPORT */}
       <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
-        {/* Header atas dengan tombol Export */}
+        {/* Header export */}
         <div className="flex items-center justify-end px-4 py-2 border-b border-slate-200 bg-slate-50">
           <Button
             variant="outline"
@@ -254,148 +349,107 @@ export default function DailyReportPage() {
           </Button>
         </div>
 
-        {/* Tabel */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-xs md:text-sm text-slate-800">
-            <thead>
-              {/* Header baris 1: total per jenis pembayaran */}
-              <tr className="bg-slate-600 text-white text-center">
-                <th className="px-3 py-2 border border-slate-400">
-                  Total Tunai
-                  <div className="text-[10px] font-normal">
-                    {totalTunai.toLocaleString("id-ID")}
-                  </div>
-                </th>
-                <th className="px-3 py-2 border border-slate-400">
-                  Total E-Toll
-                  <div className="text-[10px] font-normal">
-                    {totalEtoll.toLocaleString("id-ID")}
-                  </div>
-                </th>
-                <th className="px-3 py-2 border border-slate-400">
-                  Total Flo
-                  <div className="text-[10px] font-normal">
-                    {totalFlo.toLocaleString("id-ID")}
-                  </div>
-                </th>
-                <th className="px-3 py-2 border border-slate-400">
-                  Total KTP
-                  <div className="text-[10px] font-normal">
-                    {totalKtp.toLocaleString("id-ID")}
-                  </div>
-                </th>
-                <th className="px-3 py-2 border border-slate-400">
-                  Total Keseluruhan
-                  <div className="text[10px] font-normal">
-                    {totalKeseluruhan.toLocaleString("id-ID")}
-                  </div>
-                </th>
-                <th className="px-3 py-2 border border-slate-400">
-                  Total E-Toll+Tunai+Flo
-                  <div className="text-[10px] font-normal">
-                    {totalEtollTunaiFlo.toLocaleString("id-ID")}
-                  </div>
-                </th>
-              </tr>
+        {/* TABS TOTAL */}
+        <div className="px-4 pt-4 pb-2 border-b border-slate-200 bg-slate-50">
+          <Tabs
+            value={activeTab}
+            onChange={(value) => {
+              if (!value) return;
+              setActiveTab(value);
+              setPage(1); // reset ke page 1 setiap ganti tab
+            }}
+            radius="md"
+            variant="outline"
+            className="w-full overflow-x-auto"
+          >
+            <Tabs.List>
+              <Tabs.Tab value="tunai">Total Tunai</Tabs.Tab>
+              <Tabs.Tab value="etoll">Total E-Toll</Tabs.Tab>
+              <Tabs.Tab value="flo">Total Flo</Tabs.Tab>
+              <Tabs.Tab value="ktp">Total KTP</Tabs.Tab>
+              <Tabs.Tab value="keseluruhan">Total Keseluruhan</Tabs.Tab>
+              <Tabs.Tab value="combo">Total E-Toll+Tunai+Flo</Tabs.Tab>
+            </Tabs.List>
 
-              {/* Header baris 2: kolom detail */}
-              <tr className="bg-slate-100 text-left">
-                <th className="px-2 py-2 border border-slate-200">No.</th>
-                <th className="px-2 py-2 border border-slate-200">Ruas</th>
-                <th className="px-2 py-2 border border-slate-200">Gerbang</th>
-                <th className="px-2 py-2 border border-slate-200">Gardu</th>
-                <th className="px-2 py-2 border border-slate-200">Hari</th>
-                <th className="px-2 py-2 border border-slate-200">Tanggal</th>
-                <th className="px-2 py-2 border border-slate-200">
-                  Metode Pembayaran
-                </th>
-                <th className="px-2 py-2 border border-slate-200">Gol I</th>
-                <th className="px-2 py-2 border border-slate-200">Gol II</th>
-                <th className="px-2 py-2 border border-slate-200">Gol III</th>
-                <th className="px-2 py-2 border border-slate-200">Gol IV</th>
-                <th className="px-2 py-2 border border-slate-200">Gol V</th>
-                <th className="px-2 py-2 border border-slate-200">
-                  Total Lalin
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {pagedRows.map((row) => (
-                <tr key={row.no} className="hover:bg-slate-50">
-                  <td className="px-2 py-1 border border-slate-100 text-center">
-                    {row.no}
-                  </td>
-                  <td className="px-2 py-1 border border-slate-100">
-                    {row.ruas}
-                  </td>
-                  <td className="px-2 py-1 border border-slate-100">
-                    {row.gerbang}
-                  </td>
-                  <td className="px-2 py-1 border border-slate-100 text-center">
-                    {row.gardu}
-                  </td>
-                  <td className="px-2 py-1 border border-slate-100">
-                    {row.hari}
-                  </td>
-                  <td className="px-2 py-1 border border-slate-100">
-                    {dayjs(row.tanggal).format("DD-MM-YYYY")}
-                  </td>
-                  <td className="px-2 py-1 border border-slate-100">
-                    {row.metodePembayaran}
-                  </td>
-                  <td className="px-2 py-1 border border-slate-100 text-right">
-                    {row.golI}
-                  </td>
-                  <td className="px-2 py-1 border border-slate-100 text-right">
-                    {row.golII}
-                  </td>
-                  <td className="px-2 py-1 border border-slate-100 text-right">
-                    {row.golIII}
-                  </td>
-                  <td className="px-2 py-1 border border-slate-100 text-right">
-                    {row.golIV}
-                  </td>
-                  <td className="px-2 py-1 border border-slate-100 text-right">
-                    {row.golV}
-                  </td>
-                  <td className="px-2 py-1 border border-slate-100 text-right">
-                    {row.totalLalin}
-                  </td>
-                </tr>
-              ))}
+            <Tabs.Panel value="tunai" pt="xs">
+              <p className="text-sm text-slate-700">
+                Total Tunai :{" "}
+                <span className="font-semibold">
+                  {totalTunai.toLocaleString("id-ID")}
+                </span>
+              </p>
+            </Tabs.Panel>
 
-              {/* ROW TOTAL PER RUAS */}
-              {totalsByRuas.map(([ruas, total]) => (
-                <tr key={ruas} className="bg-slate-50 font-medium">
-                  <td
-                    className="px-2 py-2 border border-slate-200 text-left"
-                    colSpan={12}
-                  >
-                    Total Lalin {ruas}
-                  </td>
-                  <td className="px-2 py-2 border border-slate-200 text-right">
-                    {total.toLocaleString("id-ID")}
-                  </td>
-                </tr>
-              ))}
+            <Tabs.Panel value="etoll" pt="xs">
+              <p className="text-sm text-slate-700">
+                Total E-Toll :{" "}
+                <span className="font-semibold">
+                  {totalEtoll.toLocaleString("id-ID")}
+                </span>
+              </p>
+            </Tabs.Panel>
 
-              {/* ROW TOTAL KESELURUHAN */}
-              <tr className="bg-slate-600 text-white font-semibold">
-                <td
-                  className="px-2 py-2 border border-slate-500 text-left"
-                  colSpan={12}
-                >
-                  Total Lalin Keseluruhan
-                </td>
-                <td className="px-2 py-2 border border-slate-500 text-right">
-                  {totalKeseluruhan.toLocaleString("id-ID")}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+            <Tabs.Panel value="flo" pt="xs">
+              <p className="text-sm text-slate-700">
+                Total Flo :{" "}
+                <span className="font-semibold">
+                  {totalFlo.toLocaleString("id-ID")}
+                </span>
+              </p>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="ktp" pt="xs">
+              <p className="text-sm text-slate-700">
+                Total KTP :{" "}
+                <span className="font-semibold">
+                  {totalKtp.toLocaleString("id-ID")}
+                </span>
+              </p>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="keseluruhan" pt="xs">
+              <p className="text-sm text-slate-700">
+                Total Keseluruhan :{" "}
+                <span className="font-semibold">
+                  {baseRows
+                    .reduce((sum, r) => sum + r.totalLalin, 0)
+                    .toLocaleString("id-ID")}
+                </span>
+              </p>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="combo" pt="xs">
+              <p className="text-sm text-slate-700">
+                Total E-Toll + Tunai + Flo :{" "}
+                <span className="font-semibold">
+                  {totalEtollTunaiFlo.toLocaleString("id-ID")}
+                </span>
+              </p>
+            </Tabs.Panel>
+          </Tabs>
         </div>
 
-        {/* PAGINATION BAR */}
+        {/* TABEL DETAIL (isi mengikuti Tab) */}
+        <div className="overflow-x-auto">
+          <Table.ScrollContainer minWidth={800}>
+            <Table verticalSpacing="xs">
+              <Table.Thead>
+                <Table.Tr>
+                  {tableHeader.map((th)=>{
+                    return(
+                      <Table.Th>{th}</Table.Th>
+                    )
+                  })}
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {rows}
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
+        </div>
+
+        {/* PAGINATION */}
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-slate-200 text-xs md:text-sm bg-white">
           <div className="flex items-center gap-2">
             <span>Show :</span>
