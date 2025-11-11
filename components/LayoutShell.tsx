@@ -1,58 +1,96 @@
 // components/AppShell.tsx
 "use client";
 
-import Link from "next/link";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { NavLink, rem } from '@mantine/core';
 import { IconChevronRight, IconLayoutDashboard, IconReportAnalytics, IconDatabase } from "@tabler/icons-react";
+import jm from '@/assets/jm.png'
+import Link from "next/link";
+
+
 
 interface AppShellProps {
   children: ReactNode;
 }
 
+
 export default function LayoutShell({ children }: AppShellProps) {
+  const pathname = usePathname();
+
+  // buka default kalau lagi di /reports/*
+  const [laporanOpened, setLaporanOpened] = useState(
+    pathname.startsWith("/reports")
+  );
   return (
     <div className="min-h-screen flex bg-slate-200">
       {/* SIDEBAR */}
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
         {/* Logo bar */}
-        <div className="h-16 border-b border-slate-200 flex items-center px-4 gap-2 bg-slate-100">
-          <div className="w-28 h-10 bg-slate-200 border border-slate-400 flex items-center justify-center text-xs font-medium text-slate-600">
-            App Logo
-          </div>
-          <IconChevronRight size={18} className="text-slate-500" />
+        <div className="h-16 border-b border-slate-200 items-center px-4 gap-2 bg-slate-100">
+            <Image src={jm} alt="logo" style={{width:'150px', margin:'12px auto'}}/>
         </div>
 
         {/* Menu */}
-        <nav className="flex-1 py-4 text-sm text-slate-700">
-          <Link
+         <nav className="flex-1 py-4 px-2 text-sm text-slate-700 space-y-1">
+          {/* Dashboard */}
+          <NavLink
+            label="Dashboard"
+            leftSection={<IconLayoutDashboard size={18} />}
+            component={Link}
             href="/dashboard"
-            className="flex items-center gap-2 px-4 py-2 hover:bg-slate-100"
-          >
-            <IconLayoutDashboard size={18} />
-            <span>Dashboard</span>
-          </Link>
+            active={pathname === "/dashboard"}
+            className="rounded-md"
+            styles={{
+              root: {
+                paddingLeft: rem(8),
+                paddingRight: rem(8),
+              },
+            }}
+          />
 
-          {/* Group Laporan Lalin */}
-          <div className="mt-2">
-            <div className="flex items-center gap-2 px-4 py-2 text-slate-800 font-medium">
-              <IconReportAnalytics size={18} />
-              <span>Laporan Lalin</span>
-            </div>
-            <Link
+          {/* Laporan Lalin (COLLAPSIBLE) */}
+          <NavLink
+            label="Laporan Lalin"
+            leftSection={<IconReportAnalytics size={18} />}
+            childrenOffset={32}
+            opened={laporanOpened}
+            onChange={setLaporanOpened}
+            className="rounded-md"
+            styles={{
+              root: {
+                paddingLeft: rem(8),
+                paddingRight: rem(8),
+              },
+            }}
+          >
+            <NavLink
+              label="Laporan Per Hari"
+              component={Link}
               href="/reports/daily"
-              className="block pl-11 pr-4 py-1.5 text-slate-700 hover:bg-slate-100"
-            >
-              Laporan Per Hari
-            </Link>
-          </div>
+              active={pathname === "/reports/daily"}
+              className="rounded-md"
+            />
+            {/* kalau nanti ada sub-menu lain (misal Laporan Bulanan),
+                tinggal tambahkan NavLink lagi di sini */}
+          </NavLink>
 
-          <Link
+          {/* Master Gerbang */}
+          <NavLink
+            label="Master Gerbang"
+            leftSection={<IconDatabase size={18} />}
+            component={Link}
             href="/master/gates"
-            className="mt-4 flex items-center gap-2 px-4 py-2 hover:bg-slate-100"
-          >
-            <IconDatabase size={18} />
-            <span>Master Gerbang</span>
-          </Link>
+            active={pathname.startsWith("/master/gates")}
+            className="rounded-md"
+            styles={{
+              root: {
+                paddingLeft: rem(8),
+                paddingRight: rem(8),
+              },
+            }}
+          />
         </nav>
       </aside>
 

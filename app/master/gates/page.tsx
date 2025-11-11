@@ -1,7 +1,7 @@
 // app/master/gates/page.tsx
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Button, TextInput, Select, Modal } from "@mantine/core";
 import LayoutShell from "@/components/LayoutShell";
 import {
@@ -28,6 +28,10 @@ const MOCK_GATES: GateRow[] = [
 type Mode = "create" | "edit" | "view";
 
 export default function MasterGatesPage() {
+  // const [search, setSearch] = useState("");
+  // const [pageSize, setPageSize] = useState("5");
+  // const [page, setPage] = useState(1);
+  const [rows, setRows] = useState<GateRow[]>([]);
   const [search, setSearch] = useState("");
   const [pageSize, setPageSize] = useState("5");
   const [page, setPage] = useState(1);
@@ -35,6 +39,22 @@ export default function MasterGatesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<Mode>("create");
   const [current, setCurrent] = useState<GateRow | null>(null);
+
+  useEffect(() => {
+  const loadGates = async () => {
+    const res = await fetch("/api/gerbangs", { cache: "no-store" });
+    if (!res.ok) {
+      console.error("Gagal load gerbang:", await res.text());
+      return;
+    }
+    const data = await res.json();
+    // sesuaikan dengan struktur backend, contoh: { data: [...] }
+    // setRows(data.data ?? data);
+    console.log(data)
+  };
+
+  loadGates();
+}, []);
 
   // filter + pagination lokal
   const filtered = useMemo(
